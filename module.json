@@ -1,7 +1,7 @@
 {
   "id": "reality-check",
   "title": "Reality Check",
-  "description": "A tiny GM-only oracular panel for fast yes/no rulings with optional twists.",
+  "description": "A small GM-only oracular panel for fast yes/no rulings with optional twists.",
   "version": "1.4.0",
   "compatibility": {
     "minimum": "13",
@@ -9,7 +9,8 @@
   },
   "authors": [
     {
-      "name": "Mark Griffiths"
+      "name": "Mark Griffiths",
+      "url":"https://github.com/HighPlainsGrifter"
     }
   ],
   "esmodules": [
@@ -17,5 +18,10 @@
   ],
   "styles": [
     "styles/reality-check.css"
-  ]
+  ],
+  "url":"https://github.com/HighPlainsGrifter/Reality-Check",
+  "manifest":"https://raw.githubusercontent.com/HighPlainsGrifter/Reality-Check/main/module.json",
+  "license":"LICENSE",
+  "readme":"README.md",
+  "bugs":"https://github.com/HighPlainsGrifter/Reality-Check/issues"
 }
