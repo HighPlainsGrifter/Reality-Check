@@ -23,5 +23,6 @@
   "manifest":"https://raw.githubusercontent.com/HighPlainsGrifter/Reality-Check/main/module.json",
   "license":"LICENSE",
   "readme":"README.md",
-  "bugs":"https://github.com/HighPlainsGrifter/Reality-Check/issues"
+  "bugs":"https://github.com/HighPlainsGrifter/Reality-Check/issues",
+  "download":"https://github.com/HighPlainsGrifter/Reality-Check/releases/download/v1.4.0/reality-check.zip"
 }
