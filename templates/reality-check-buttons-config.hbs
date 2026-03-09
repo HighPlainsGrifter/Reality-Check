@@ -1,0 +1,46 @@
+<div class="rcbc">
+  <p class="rcbc__hint">
+    Enter one or more values from 1 to 100. Each value is the minimum d100 result that counts as <strong>Yes</strong>; lower numbers are easier.
+  </p>
+
+  <div class="rcbc__rows">
+    {{#each rows}}
+      <div class="rcbc__row">
+        <input
+          type="number"
+          min="1"
+          max="100"
+          step="1"
+          class="rcbc-value"
+          data-index="{{this.index}}"
+          value="{{this.value}}"
+        >
+        <button
+          type="button"
+          class="rcbc-remove"
+          data-action="remove-row"
+          data-index="{{this.index}}"
+          aria-label="Remove row {{this.index}}"
+          title="Remove this button"
+        >
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
+    {{/each}}
+  </div>
+
+  <button type="button" class="rcbc-add" data-action="add-row">
+    <i class="fa-solid fa-plus"></i>
+    Add button
+  </button>
+
+  <label class="rcbc__checkbox-row">
+    <span>Show the Yes/No Threshold Number inside the UI buttons.</span>
+    <input type="checkbox" class="rcbc-show-threshold" {{#if showThreshold}}checked{{/if}}>
+  </label>
+
+  <div class="rcbc__actions">
+    <button type="button" class="rcbc-cancel" data-action="cancel">Cancel</button>
+    <button type="button" class="rcbc-save" data-action="save">Save</button>
+  </div>
+</div>

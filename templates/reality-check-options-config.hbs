@@ -1,0 +1,60 @@
+<div class="rcco">
+  <div class="rcco__row">
+    <label for="rc-color-saturation">Saturation</label>
+    <span class="rcco-saturation-value">{{colorSaturation}}%</span>
+  </div>
+  <input
+    id="rc-color-saturation"
+    class="rcco-saturation"
+    type="range"
+    min="0"
+    max="100"
+    step="1"
+    value="{{colorSaturation}}"
+  >
+
+  <div class="rcco__row">
+    <label for="rc-color-lightness">Lightness</label>
+    <span class="rcco-lightness-value">{{colorLightness}}%</span>
+  </div>
+  <input
+    id="rc-color-lightness"
+    class="rcco-lightness"
+    type="range"
+    min="0"
+    max="100"
+    step="1"
+    value="{{colorLightness}}"
+  >
+
+<div class="rcco__row rcco__row--number">
+    <label for="rc-easiest-hue">Easiest Button Hue (0-359 spectrum)</label>
+    <input
+      id="rc-easiest-hue"
+      class="rcco-easiest-hue"
+      type="number"
+      min="0"
+      max="359"
+      step="1"
+      value="{{easiestHue}}"
+    >
+  </div>
+
+<div class="rcco__row rcco__row--number">
+    <label for="rc-hardest-hue">Hardest Button Hue (0-359 spectrum)</label>
+    <input
+      id="rc-hardest-hue"
+      class="rcco-hardest-hue"
+      type="number"
+      min="0"
+      max="359"
+      step="1"
+      value="{{hardestHue}}"
+    >
+  </div>
+
+  <div class="rcco__actions">
+    <button type="button" data-action="cancel">Cancel</button>
+    <button type="button" data-action="save">Save</button>
+  </div>
+</div>
