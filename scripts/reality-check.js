@@ -2,12 +2,12 @@
 const MODULE_ID = "reality-check";
 const MODULE_TITLE = "Reality Check";
 
-// These thresholds represent the minimum d100 roll that counts as YES.
-// Expressed as percentages: 21 = 80% Yes, 36 = 65% Yes, 51 = 50% Yes, etc.
+// These thresholds represent the maximum d100 roll that counts as NO.
+// Expressed as percentages: 20 = 80% Yes, 33 = 67% Yes, 50 = 50% Yes, etc. Low numbers are therefore easier, which fits the normal game DC system.
 // Used only when the saved setting is missing or corrupt.
 const DEFAULT_BUTTONS = [20, 33, 50, 66, 80];
 
-// Tucked against the top-left so it stays out of the way by default but doesn't overlap the macro hotbar or scene controls.
+// Tucked against the mid-left so it stays out of the way by default but doesn't overlap the macro hotbar or scene controls.
 const DEFAULT_PANEL_POSITION = {
   left: 20,
   top: 120,
