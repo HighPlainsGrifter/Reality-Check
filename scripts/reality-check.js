@@ -1,12 +1,11 @@
-// Centralise the module ID and title so they never fall out of sync between
-// the manifest, settings keys, CSS selectors, and user-facing strings.
+// Centralise the module ID and title so they never fall out of sync between the manifest, settings keys, CSS selectors, and user-facing strings.
 const MODULE_ID = "reality-check";
 const MODULE_TITLE = "Reality Check";
 
 // These thresholds represent the minimum d100 roll that counts as YES.
 // Expressed as percentages: 21 = 80% Yes, 36 = 65% Yes, 51 = 50% Yes, etc.
 // Used only when the saved setting is missing or corrupt.
-const DEFAULT_BUTTONS = [21, 36, 51, 66, 81];
+const DEFAULT_BUTTONS = [20, 33, 50, 66, 80];
 
 // Tucked against the top-left so it stays out of the way by default but doesn't overlap the macro hotbar or scene controls.
 const DEFAULT_PANEL_POSITION = {
@@ -68,20 +67,20 @@ class RealityCheckPanel extends RealityCheckBase {
 
   async _prepareContext() {
     const showThreshold = game.settings.get(MODULE_ID, "showThreshold");
-    // Fetch the button list once and pass it through to getHueFromYesFrom so the hue calculation doesn't re-read settings for every button.
+    // Fetch the button list once and pass it through to getHueFromnoTo so the hue calculation doesn't re-read settings for every button.
     const buttons = getButtonThresholds();
     const { saturation, lightness } = getColorTuning();
 
     return {
-      buttons: buttons.map((yesFrom) => ({
-        yesFrom,
+      buttons: buttons.map((noTo) => ({
+        noTo,
         // Empty string when thresholds are hidden so the button still renders at the correct size but shows no text - the colour alone 
         // communicates the likelihood to an experienced GM.
-        display: showThreshold ? String(yesFrom) : "",
-        hue: getHueFromYesFrom(yesFrom, buttons),
+        display: showThreshold ? String(noTo) : "",
+        hue: getHueFromnoTo(noTo, buttons),
         saturation,
         lightness,
-        tooltip: buildTooltip(yesFrom)
+        tooltip: buildTooltip(noTo)
       }))
     };
   }
@@ -95,9 +94,9 @@ class RealityCheckPanel extends RealityCheckBase {
     // Attach click handlers here rather than using Foundry's declarative action system so we can read the shift-key state directly from the MouseEvent.
     for (const button of root.querySelectorAll(".rc-likelihood")) {
       button.addEventListener("click", async (event) => {
-        const yesFrom = Number(event.currentTarget.dataset.yesFrom);
+        const noTo = Number(event.currentTarget.dataset.noTo);
         // Shift-click forces GM-only output regardless of the default setting, giving the GM a quick override without going into settings.
-        await makeRealityCheckRoll(yesFrom, { forceGmOnly: event.shiftKey });
+        await makeRealityCheckRoll(noTo, { forceGmOnly: event.shiftKey });
       });
     }
   }
@@ -211,7 +210,7 @@ class RealityCheckButtonsConfig extends RealityCheckBase {
     const rawValues = Array.from(root.querySelectorAll(".rcbc-value"), (input) => input.value);
     const normalized = normalizeButtonThresholds(rawValues);
 
-    // Refuse to save an empty list — the panel would render with no buttons and there'd be no way to trigger a roll without
+    // Refuse to save an empty list - the panel would render with no buttons and there'd be no way to trigger a roll without
     // reopening this dialog.
     if (!normalized.length) {
       ui.notifications.error("Reality Check needs at least one valid button value from 1 to 100.");
@@ -417,7 +416,7 @@ Hooks.once("init", () => {
 
   game.settings.register(MODULE_ID, "buttonThresholds", {
     name: "Button Thresholds",
-    hint: "Internal storage for the configured yesFrom button list.",
+    hint: "Internal storage for the configured noTo button list.",
     scope: "user",
     config: false,
     type: Object,
@@ -429,7 +428,7 @@ Hooks.once("init", () => {
   game.settings.registerMenu(MODULE_ID, "buttonThresholdsMenu", {
     name: `${MODULE_TITLE} Buttons`,
     label: "Configure Buttons",
-    hint: "Add, remove, and reorder the yesFrom values used for the panel buttons.",
+    hint: "Add, remove, and reorder the noTo values used for the panel buttons.",
     icon: "fa-solid fa-sliders",
     type: RealityCheckButtonsConfig,
     restricted: true
@@ -521,7 +520,7 @@ async function rerenderPanel() {
 // ---------------------------------------------------------------------------
 // Core roll logic
 // ---------------------------------------------------------------------------
-async function makeRealityCheckRoll(yesFrom, { forceGmOnly = false } = {}) {
+async function makeRealityCheckRoll(noTo, { forceGmOnly = false } = {}) {
   if (!game.user.isGM) return;
 
   // Clamp at read time in case the setting has been set to an out-of-range value via the API or direct settings manipulation.
@@ -532,16 +531,16 @@ async function makeRealityCheckRoll(yesFrom, { forceGmOnly = false } = {}) {
   // The primary roll is shown to everyone as a ghost die so players see something happen without knowing the result.
   const primaryRoll = await rollD100({ showDice: true });
 
-  // The twist roll is entirely silent — players shouldn't know a twist check even happened, which keeps the "Yes, but..." result feeling organic.
+  // The twist roll is entirely silent - players shouldn't know a twist check even happened, which keeps the "Yes, but..." result feeling organic.
   const twistRoll = await rollD100({ showDice: false });
 
-  const isYes      = primaryRoll >= yesFrom;
+  const isYes      = primaryRoll > noTo;
   const hasTwist   = twistRoll <= twistRate;
   const resultText = getResultText(isYes, hasTwist);
 
   // Match the chat message colour to the button that was clicked, so peeps can spot the approximate odds at a glance. I didn't want people to get
   // hung up on arguing over exact numbers, so this is the only real indication of difficulty.
-  const hue = getHueFromYesFrom(yesFrom, getButtonThresholds());
+  const hue = getHueFromnoTo(noTo, getButtonThresholds());
   const { saturation, lightness } = getColorTuning();
 
   // Colour is passed as CSS custom properties so the stylesheet controls the exact visual treatment without needing to inline every style rule here.
@@ -640,32 +639,33 @@ function normalizeButtonThresholds(values, fallback = []) {
   return Array.from(new Set(cleaned)).sort((a, b) => a - b);
 }
 
-// yesFrom is the minimum roll for YES, so the chance of a YES result is everything from yesFrom up to 100 inclusive: (101 - yesFrom) percent.
+// noTo is the minimum roll for YES, so the chance of a YES result is everything from noTo up to 100 inclusive: (101 - yesFrom) percent.
 // I'm really concerned that I should have changed this to make the number entry more intuitive... I mean, it works, but should I change it? I haven't...
-function getYesPercent(yesFrom) {
-  return clampInteger(101 - Number(yesFrom), 0, 100, 50);
+//UPDATE I have changed this for v1.4.1 - Now instead of yesFrom, I use noTo and the numbers make more sense.
+function getYesPercent(noTo) {
+  return clampInteger(100 - Number(noTo), 0, 100, 50);
 }
 
-function buildTooltip(yesFrom) {
+function buildTooltip(noTo) {
   const outputPublic = Boolean(game.settings.get(MODULE_ID, "outputPublic"));
   // Conversify the hint text to match the current default so the GM is never surprised about where the result ends up.
   const shiftHint = outputPublic ? "Shift-click = GM only" : "Shift-click = post publicly";
-  return `${getYesPercent(yesFrom)}% Yes ${MODULE_TITLE}; ${shiftHint}`;
+  return `${getYesPercent(noTo)}% Yes ${MODULE_TITLE}; ${shiftHint}`;
 }
 
-function getHueFromYesFrom(yesFrom, buttons = getButtonThresholds()) {
-  const minYesFrom = Math.min(...buttons);
-  const maxYesFrom = Math.max(...buttons);
+function getHueFromnoTo(noTo, buttons = getButtonThresholds()) {
+  const minnoTo = Math.min(...buttons);
+  const maxnoTo = Math.max(...buttons);
   const easiestHue = normaliseHue(game.settings.get(MODULE_ID, "easiestHue"), 270);
   const hardestHue = normaliseHue(game.settings.get(MODULE_ID, "hardestHue"), 0);
 
   // Can't spread an empty array - bail to the easiest hue as a safe default.
-  if (!Number.isFinite(minYesFrom) || !Number.isFinite(maxYesFrom)) return easiestHue;
+  if (!Number.isFinite(minnoTo) || !Number.isFinite(maxnoTo)) return easiestHue;
   // Only one button configured - no meaningful spectrum to interpolate across, so split the difference between the two endpoint hues.
-  if (minYesFrom === maxYesFrom) return Math.round((easiestHue + hardestHue) / 2);
+  if (minnoTo === maxnoTo) return Math.round((easiestHue + hardestHue) / 2);
 
-  // Linear interpolation across the hue spectrum: the easiest button (lowest yesFrom = highest Yes%)
-  const t = (yesFrom - minYesFrom) / (maxYesFrom - minYesFrom);
+  // Linear interpolation across the hue spectrum: the easiest button (lowest noTo = highest Yes%)
+  const t = (noTo - minnoTo) / (maxnoTo - minnoTo);
   return Math.round(easiestHue + (hardestHue - easiestHue) * t);
 }
 
